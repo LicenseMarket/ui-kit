@@ -1,11 +1,10 @@
-// src/index.ts
 export * from "./components/ui/button";
 export * from "./components/ui/separator";
 export * from "./components/ui/sidebar";
 export * from "./components/ui/sheet";
 export * from "./components/ui/tooltip";
 export * from "./components/ui/skeleton";
-export * from "./components/ui/scroll-area"; // Removed duplicate export
+export * from "./components/ui/scroll-area";
 export * from "./components/ui/input";
 export * from "./components/ui/input-otp";
 export * from "./components/ui/collapsible";
@@ -36,7 +35,6 @@ export { DirectionProvider } from "@radix-ui/react-direction";
 
 export * from "./lib/dateDifference";
 
-// Named exports for global components
 export { default as SheetGrid } from "./components/global/SheetGrid";
 export { default as Combobox } from "./components/global/Combobox";
 export { default as CustomDropdownMenu } from "./components/global/DropdownMenu";
@@ -49,7 +47,5 @@ export { default as Editable } from "./components/global/Editable";
 export { default as TooltipGlobal } from "./components/global/Tooltip";
 export { default as Copy } from "./components/global/Copy";
 export { default as Editor } from "./components/global/Editor";
+export { default as Pagination } from "./components/global/Pagination";
 export * from "./lib/arrayParser";
-
-// Optional: Export API_URL as a function or constant if needed
-// export const API_URL = "https://default-api-url.com"; // Replace with a default or runtime solution

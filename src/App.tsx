@@ -1,33 +1,29 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Button } from "./components/ui/button"
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+      <h3 className='text-4xl text-red-500 text-center mt-14 font-bold'>
+        Welcome To LicenseMarket UI Kit
+      </h3>
+      <div className="text-center space-y-2 mt-4">
+        <p className="text-red-500 font-medium">
+          A comprehensive UI component library for building modern web applications, powered by
+          <Button variant="destructive" className="mx-1" size="xs">Shadcn</Button>
+          and documented with
+          <Button variant="destructive" className="mx-1" size="xs">Storybook</Button>
+        </p>
+        <p className="text-gray-600">
+          Visit our
+          <Button variant="link">
+            documentation
+          </Button>
+          or explore our
+          <Button variant="link">
+            component library
+          </Button>
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   )
 }

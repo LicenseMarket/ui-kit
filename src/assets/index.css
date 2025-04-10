@@ -1,7 +1,9 @@
+/* Tailwind Directives */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Base Layer Styles */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -73,11 +75,9 @@
     --sidebar-border: 0 0% 15%;
     --sidebar-ring: 217 91% 60%;
   }
-}
 
-@layer base {
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
 
   body {
@@ -85,6 +85,7 @@
   }
 }
 
+/* Utility Classes */
 .hidden-scrollbar {
   overflow-y: scroll;
   /* Enable vertical scrolling */
@@ -97,16 +98,4 @@
 .hidden-scrollbar::-webkit-scrollbar {
   display: none;
   /* For Chrome, Safari, and Opera */
-}
-
-
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-
-  body {
-    @apply bg-background text-foreground;
-  }
 }

@@ -1,9 +1,5 @@
 import _ from "lodash";
 
-interface UserInfo {
-  permissions: string[];
-}
-
 const getRolesFromLocalStorage = (): object => {
   try {
     const permissions = window.localStorage.getItem("permissions");

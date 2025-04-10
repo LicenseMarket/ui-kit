@@ -8,8 +8,6 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import { Spin } from "antd";
-import { LoadingOutlined } from "@ant-design/icons";
 
 export interface Column {
   title: string;
@@ -108,7 +106,7 @@ const _Table = ({
       setTimeout(() => onRow(item), 0);
     }
   },
-  []);
+    []);
 
   const generateHref = (item: any): string => {
     let href = "";
@@ -133,11 +131,12 @@ const _Table = ({
       className={`${className} rtl hidden-scrollbar h-[calc(100vh-167px)] rounded-2xl border
         border-neutral-300 dark:border-neutral-700`}
     >
-      <Spin
-        indicator={<LoadingOutlined className="text-primary" spin />}
-        spinning={loading}
-        className="h-full w-full"
-      >
+      <div className="relative h-full w-full">
+        {loading && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+          </div>
+        )}
         <Table>
           {caption && <TableCaption>{caption}</TableCaption>}
           <TableHeader>
@@ -157,8 +156,7 @@ const _Table = ({
 
               return (
                 <TableRow
-                  className={`${previousRowClassName} hover:bg-secondary/40 relative transition-all ${
-                  item.link ? "cursor-pointer" : "" } transition-all ${rowClassName}`}
+                  className={`${previousRowClassName} hover:bg-secondary/40 relative transition-all ${item.link ? "cursor-pointer" : ""} transition-all ${rowClassName}`}
                   key={tableRowKey}
                   onClick={handleTableRowClick.bind(
                     this,
@@ -179,11 +177,11 @@ const _Table = ({
                       >
                         {column.render
                           ? column.render(
-                              column.dataIndex ? item[column.dataIndex] : null,
-                              item,
-                              rowIndex,
-                              data
-                            )
+                            column.dataIndex ? item[column.dataIndex] : null,
+                            item,
+                            rowIndex,
+                            data
+                          )
                           : column.dataIndex && item[column.dataIndex]}
                       </a>
                     </TableCell>
@@ -193,7 +191,7 @@ const _Table = ({
             })}
           </TableBody>
         </Table>
-      </Spin>
+      </div>
     </div>
   );
 };

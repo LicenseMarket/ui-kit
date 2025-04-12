@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Button, Input } from "@lm/shared";
 import { useQueryState } from "nuqs";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 
 interface PaginationProps {
   meta: {

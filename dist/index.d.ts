@@ -1,3 +1,4 @@
+import "./assets/index.css";
 export * from "./components/ui/aspect-ratio";
 export * from "./components/ui/badge";
 export * from "./components/ui/breadcrumb";

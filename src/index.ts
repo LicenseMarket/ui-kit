@@ -1,3 +1,5 @@
+import "./assets/index.css";
+
 // UI Components
 export * from "./components/ui/aspect-ratio";
 export * from "./components/ui/badge";

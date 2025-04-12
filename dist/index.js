@@ -1684,17 +1684,15 @@ TableCell.displayName = "TableCell";
 const TableCaption = React__namespace.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx("caption", { ref: ref, className: cn("text-muted-foreground mt-4 text-sm", className), ...props })));
 TableCaption.displayName = "TableCaption";
 
-const handlePreviousRowSession = function () {
-    const previousRowName = `previous-selected-table-row`;
+const handlePreviousRowSession = () => {
+    const previousRowName = "previous-selected-table-row";
     const previousRowSession = sessionStorage.getItem(previousRowName);
     const parsedRowSession = previousRowSession
         ? JSON.parse(previousRowSession)
         : { [window.location.pathname]: null };
     return {
-        get: function () {
-            return parsedRowSession[window.location.pathname] || null;
-        },
-        set: function (keyValue) {
+        get: () => parsedRowSession[window.location.pathname] || null,
+        set: (keyValue) => {
             const rowSelectedOfPage = {
                 ...parsedRowSession,
                 [window.location.pathname]: keyValue,
@@ -1706,50 +1704,42 @@ const handlePreviousRowSession = function () {
 const _Table = ({ data, columns, caption, onRow, className, loading = false, hrefPattern, rowClassName, }) => {
     const [previousRow, setPreviousRow] = React.useState("");
     const memoizedPreviousRow = React.useMemo(() => previousRow, [previousRow]);
-    const [randomNumber, setRandomNumber] = React.useState(0);
-    React.useEffect(() => {
-        setRandomNumber(Math.floor(Math.random() * 10000));
-    }, []);
+    const tableId = React.useMemo(() => Math.floor(Math.random() * 10000), []);
     React.useEffect(() => {
         const previousRowValue = handlePreviousRowSession().get();
         if (previousRowValue)
             setPreviousRow(previousRowValue);
-        if (data && data.length) {
-            const tableContainer = document.querySelector(`#table-${randomNumber}`);
-            if (tableContainer) {
-                tableContainer.scroll({
-                    top: 0,
-                    behavior: "smooth",
-                });
-            }
+        if (data?.length) {
+            const tableContainer = document.querySelector(`#table-${tableId}`);
+            tableContainer?.scroll({
+                top: 0,
+                behavior: "smooth",
+            });
         }
-    }, [data]);
-    const handleTableRowClick = React.useCallback(function (onRow, tableRowKey, item) {
-        if (onRow) {
+    }, [data, tableId]);
+    const handleTableRowClick = React.useCallback((onRowHandler, tableRowKey, item) => {
+        if (onRowHandler) {
             setPreviousRow(tableRowKey);
             handlePreviousRowSession().set(tableRowKey);
-            // Change the execution stack of onRowClick to make the selected animate smoth
-            setTimeout(() => onRow(item), 0);
+            setTimeout(() => onRowHandler(item), 0);
         }
     }, []);
     const generateHref = (item) => {
-        let href = "";
         if (!hrefPattern)
-            return item.id;
-        const id = hrefPattern?.split(":")[1];
+            return String(item.id);
+        const id = hrefPattern.split(":")[1];
         const regex = /\[([^\]]+)\]/;
         const findChild = hrefPattern.match(regex);
-        href = `?${hrefPattern
+        return `?${hrefPattern
             .replace(`:${id}`, findChild ? item[findChild[1]][id] : item[id])
             .replace(regex, "")}`;
-        return href;
     };
-    return (jsxRuntime.jsx("div", { id: `table-${randomNumber}`, className: `${className} rtl hidden-scrollbar h-[calc(100vh-167px)] rounded-2xl border
+    return (jsxRuntime.jsx("div", { id: `table-${tableId}`, className: `${className} rtl hidden-scrollbar h-[calc(100vh-167px)] rounded-2xl border
         border-neutral-300 dark:border-neutral-700`, children: jsxRuntime.jsxs("div", { className: "relative h-full w-full", children: [loading && (jsxRuntime.jsx("div", { className: "absolute inset-0 z-50 flex items-center justify-center bg-background/50", children: jsxRuntime.jsx("div", { className: "h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" }) })), jsxRuntime.jsxs(Table, { children: [caption && jsxRuntime.jsx(TableCaption, { children: caption }), jsxRuntime.jsx(TableHeader, { children: jsxRuntime.jsx(TableRow, { children: columns.map((column, i) => (jsxRuntime.jsx(TableHead, { className: `text-right ${column.className}`, children: column.title }, i))) }) }), jsxRuntime.jsx(TableBody, { children: data?.map((item, rowIndex) => {
-                                const tableRowKey = `table-row-${item?.id}-${rowIndex}`;
+                                const tableRowKey = `table-row-${item.id}-${rowIndex}`;
                                 const previousRowClassName = memoizedPreviousRow === tableRowKey ? "bg-red-800/10" : "";
-                                return (jsxRuntime.jsx(TableRow, { className: `${previousRowClassName} hover:bg-secondary/40 relative transition-all ${item.link ? "cursor-pointer" : ""} transition-all ${rowClassName}`, onClick: handleTableRowClick.bind(undefined, onRow, tableRowKey, item), children: columns.map((column, columnIndex) => (jsxRuntime.jsx(TableCell, { className: "text-center", children: jsxRuntime.jsx("a", { href: generateHref(item), onClick: (e) => e.preventDefault(), className: `flex h-14 cursor-pointer items-center ${column.align}`, children: column.render
-                                                ? column.render(column.dataIndex ? item[column.dataIndex] : null, item, rowIndex, data)
+                                return (jsxRuntime.jsx(TableRow, { className: `${previousRowClassName} hover:bg-secondary/40 relative transition-all ${"link" in item ? "cursor-pointer" : ""} ${rowClassName}`, onClick: () => handleTableRowClick(onRow, tableRowKey, item), children: columns.map((column, columnIndex) => (jsxRuntime.jsx(TableCell, { className: "text-center", children: jsxRuntime.jsx("a", { href: generateHref(item), onClick: (e) => e.preventDefault(), className: `flex h-14 cursor-pointer items-center ${column.align}`, children: column.render
+                                                ? column.render(column.dataIndex ? item[column.dataIndex] : null, item, rowIndex, data || [])
                                                 : column.dataIndex && item[column.dataIndex] }) }, `table-column-${columnIndex}`))) }, tableRowKey));
                             }) })] })] }) }));
 };

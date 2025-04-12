@@ -1,20 +1,22 @@
-export interface Column {
+export interface Column<T = any> {
     title: string;
-    dataIndex?: string;
+    dataIndex?: keyof T;
     className?: string;
     align?: "justify-start" | "justify-center" | "justify-end";
-    render?: (selected: any, item: any, index: number, data: any) => any;
+    render?: (selected: T[keyof T], item: T, index: number, data: T[]) => React.ReactNode;
 }
-type OnRowType = (selected: any) => void;
-interface Props {
-    data?: any[];
-    columns: Column[];
+type OnRowType<T> = (selected: T) => void;
+interface Props<T = any> {
+    data?: T[];
+    columns: Column<T>[];
     caption?: string;
-    onRow?: OnRowType;
+    onRow?: OnRowType<T>;
     className?: string;
     loading?: boolean;
     rowClassName?: string;
     hrefPattern?: string;
 }
-declare const _Table: ({ data, columns, caption, onRow, className, loading, hrefPattern, rowClassName, }: Props) => import("react/jsx-runtime").JSX.Element;
+declare const _Table: <T extends {
+    id: string | number;
+}>({ data, columns, caption, onRow, className, loading, hrefPattern, rowClassName, }: Props<T>) => import("react/jsx-runtime").JSX.Element;
 export default _Table;

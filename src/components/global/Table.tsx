@@ -9,21 +9,21 @@ import {
   TableRow,
 } from "../ui/table";
 
-export interface Column {
+export interface Column<T = any> {
   title: string;
-  dataIndex?: string;
+  dataIndex?: keyof T;
   className?: string;
   align?: "justify-start" | "justify-center" | "justify-end";
-  render?: (selected: any, item: any, index: number, data: any) => any;
+  render?: (selected: T[keyof T], item: T, index: number, data: T[]) => React.ReactNode;
 }
 
-type OnRowType = (selected: any) => void;
+type OnRowType<T> = (selected: T) => void;
 
-interface Props {
-  data?: any[];
-  columns: Column[];
+interface Props<T = any> {
+  data?: T[];
+  columns: Column<T>[];
   caption?: string;
-  onRow?: OnRowType;
+  onRow?: OnRowType<T>;
   className?: string;
   loading?: boolean;
   rowClassName?: string;
@@ -35,32 +35,26 @@ interface GetPreviousRowValueProps {
   set: (keyValue: string) => void;
 }
 
-const handlePreviousRowSession = function (): GetPreviousRowValueProps {
-  const previousRowName = `previous-selected-table-row`;
+const handlePreviousRowSession = (): GetPreviousRowValueProps => {
+  const previousRowName = "previous-selected-table-row";
   const previousRowSession = sessionStorage.getItem(previousRowName);
   const parsedRowSession = previousRowSession
     ? JSON.parse(previousRowSession)
     : { [window.location.pathname]: null };
 
   return {
-    get: function () {
-      return parsedRowSession[window.location.pathname] || null;
-    },
-    set: function (keyValue) {
+    get: () => parsedRowSession[window.location.pathname] || null,
+    set: (keyValue: string) => {
       const rowSelectedOfPage = {
         ...parsedRowSession,
         [window.location.pathname]: keyValue,
       };
-
-      sessionStorage.setItem(
-        previousRowName,
-        JSON.stringify(rowSelectedOfPage)
-      );
+      sessionStorage.setItem(previousRowName, JSON.stringify(rowSelectedOfPage));
     },
   };
 };
 
-const _Table = ({
+const _Table = <T extends { id: string | number }>({
   data,
   columns,
   caption,
@@ -69,72 +63,57 @@ const _Table = ({
   loading = false,
   hrefPattern,
   rowClassName,
-}: Props) => {
+}: Props<T>) => {
   const [previousRow, setPreviousRow] = useState("");
   const memoizedPreviousRow = useMemo(() => previousRow, [previousRow]);
-  const [randomNumber, setRandomNumber] = useState(0);
-
-  useEffect(() => {
-    setRandomNumber(Math.floor(Math.random() * 10000));
-  }, []);
+  const tableId = useMemo(() => Math.floor(Math.random() * 10000), []);
 
   useEffect(() => {
     const previousRowValue = handlePreviousRowSession().get();
     if (previousRowValue) setPreviousRow(previousRowValue);
 
-    if (data && data.length) {
-      const tableContainer = document.querySelector(`#table-${randomNumber}`);
-      if (tableContainer) {
-        tableContainer.scroll({
-          top: 0,
-          behavior: "smooth",
-        });
+    if (data?.length) {
+      const tableContainer = document.querySelector(`#table-${tableId}`);
+      tableContainer?.scroll({
+        top: 0,
+        behavior: "smooth",
+      });
+    }
+  }, [data, tableId]);
+
+  const handleTableRowClick = useCallback(
+    (onRowHandler: OnRowType<T> | undefined, tableRowKey: string, item: T) => {
+      if (onRowHandler) {
+        setPreviousRow(tableRowKey);
+        handlePreviousRowSession().set(tableRowKey);
+        setTimeout(() => onRowHandler(item), 0);
       }
-    }
-  }, [data]);
+    },
+    []
+  );
 
-  const handleTableRowClick = useCallback(function (
-    onRow: OnRowType | undefined,
-    tableRowKey: string,
-    item: any
-  ) {
-    if (onRow) {
-      setPreviousRow(tableRowKey);
+  const generateHref = (item: T): string => {
+    if (!hrefPattern) return String(item.id);
 
-      handlePreviousRowSession().set(tableRowKey);
-      // Change the execution stack of onRowClick to make the selected animate smoth
-      setTimeout(() => onRow(item), 0);
-    }
-  },
-    []);
-
-  const generateHref = (item: any): string => {
-    let href = "";
-
-    if (!hrefPattern) return item.id;
-
-    const id = hrefPattern?.split(":")[1];
-
+    const id = hrefPattern.split(":")[1];
     const regex = /\[([^\]]+)\]/;
     const findChild = hrefPattern.match(regex);
 
-    href = `?${hrefPattern
+    return `?${hrefPattern
       .replace(`:${id}`, findChild ? item[findChild[1]][id] : item[id])
       .replace(regex, "")}`;
-
-    return href;
   };
 
   return (
     <div
-      id={`table-${randomNumber}`}
+      id={`table-${tableId}`}
       className={`${className} rtl hidden-scrollbar h-[calc(100vh-167px)] rounded-2xl border
         border-neutral-300 dark:border-neutral-700`}
     >
       <div className="relative h-full w-full">
         {loading && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-background/50">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
           </div>
         )}
         <Table>
@@ -150,20 +129,16 @@ const _Table = ({
           </TableHeader>
           <TableBody>
             {data?.map((item, rowIndex) => {
-              const tableRowKey = `table-row-${item?.id}-${rowIndex}`;
+              const tableRowKey = `table-row-${item.id}-${rowIndex}`;
               const previousRowClassName =
                 memoizedPreviousRow === tableRowKey ? "bg-red-800/10" : "";
 
               return (
                 <TableRow
-                  className={`${previousRowClassName} hover:bg-secondary/40 relative transition-all ${item.link ? "cursor-pointer" : ""} transition-all ${rowClassName}`}
+                  className={`${previousRowClassName} hover:bg-secondary/40 relative transition-all ${"link" in item ? "cursor-pointer" : ""
+                    } ${rowClassName}`}
                   key={tableRowKey}
-                  onClick={handleTableRowClick.bind(
-                    this,
-                    onRow,
-                    tableRowKey,
-                    item
-                  )}
+                  onClick={() => handleTableRowClick(onRow, tableRowKey, item)}
                 >
                   {columns.map((column, columnIndex) => (
                     <TableCell
@@ -180,7 +155,7 @@ const _Table = ({
                             column.dataIndex ? item[column.dataIndex] : null,
                             item,
                             rowIndex,
-                            data
+                            data || []
                           )
                           : column.dataIndex && item[column.dataIndex]}
                       </a>
@@ -195,4 +170,5 @@ const _Table = ({
     </div>
   );
 };
+
 export default _Table;

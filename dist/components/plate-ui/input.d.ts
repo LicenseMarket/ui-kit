@@ -5,7 +5,10 @@ export declare const inputVariants: (props?: ({
     variant?: "default" | "ghost" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 export type InputProps = React.ComponentPropsWithoutRef<"input"> & VariantProps<typeof inputVariants>;
-export declare const Input: any;
+export declare const Input: React.ForwardRefExoticComponent<Omit<React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>, "ref"> & VariantProps<(props?: ({
+    h?: "sm" | "md" | null | undefined;
+    variant?: "default" | "ghost" | null | undefined;
+} & import("class-variance-authority/types").ClassProp) | undefined) => string> & React.RefAttributes<HTMLInputElement>>;
 export type FloatingInputProps = InputProps & {
     label: string;
 };

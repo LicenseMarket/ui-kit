@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Table,
   TableBody,
@@ -93,7 +93,7 @@ const _Table = ({
     }
   }, [data]);
 
-  const handleTableRowClick = React.useCallback(function (
+  const handleTableRowClick = useCallback(function (
     onRow: OnRowType | undefined,
     tableRowKey: string,
     item: any

@@ -7,4 +7,4 @@ export declare const insertInlineElement: (editor: PlateEditor, type: string) =>
 export declare const setBlockType: (editor: PlateEditor, type: string, { at }?: {
     at?: Path;
 }) => void;
-export declare const getBlockType: (block: TElement) => any;
+export declare const getBlockType: (block: TElement) => string;

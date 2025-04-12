@@ -4,6 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import postcss from 'rollup-plugin-postcss';
 import typescript from '@rollup/plugin-typescript';
+import json from '@rollup/plugin-json';
 
 export default {
     input: 'src/index.ts', // Entry point
@@ -20,6 +21,7 @@ export default {
         },
     ],
     plugins: [
+        json(),
         typescript({
             tsconfig: './tsconfig.json',
             // declaration: true,

@@ -1,3 +1,18 @@
 import React from "react";
-export declare const ColorPickerContent: any;
-export declare const ColorPicker: React.MemoExoticComponent<any>;
+import { type TColor } from "./color-dropdown-menu-items";
+export declare const ColorPickerContent: React.ForwardRefExoticComponent<Omit<React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, "ref"> & {
+    clearColor: () => void;
+    colors: TColor[];
+    customColors: TColor[];
+    updateColor: (color: string) => void;
+    updateCustomColor: (color: string) => void;
+    color?: string;
+} & React.RefAttributes<never>>;
+export declare const ColorPicker: React.NamedExoticComponent<Omit<React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, "ref"> & {
+    clearColor: () => void;
+    colors: TColor[];
+    customColors: TColor[];
+    updateColor: (color: string) => void;
+    updateCustomColor: (color: string) => void;
+    color?: string;
+} & React.RefAttributes<never>>;

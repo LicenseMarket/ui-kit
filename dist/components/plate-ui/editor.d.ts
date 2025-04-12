@@ -14,5 +14,14 @@ declare const editorVariants: (props?: ({
     variant?: "default" | "none" | "select" | "demo" | "ai" | "aiChat" | "fullWidth" | null | undefined;
 } & import("class-variance-authority/types").ClassProp) | undefined) => string;
 export type EditorProps = PlateContentProps & VariantProps<typeof editorVariants>;
-export declare const Editor: React.ForwardRefExoticComponent<any>;
+export declare const Editor: React.ForwardRefExoticComponent<Omit<import("@udecode/slate-react").TEditableProps, "decorate"> & {
+    autoFocusOnEditable?: boolean;
+    decorate?: import("@udecode/plate-core/react").PlateStoreState["decorate"];
+    disabled?: boolean;
+    renderEditable?: (editable: React.ReactElement) => React.ReactNode;
+} & VariantProps<(props?: ({
+    disabled?: boolean | null | undefined;
+    focused?: boolean | null | undefined;
+    variant?: "default" | "none" | "select" | "demo" | "ai" | "aiChat" | "fullWidth" | null | undefined;
+} & import("class-variance-authority/types").ClassProp) | undefined) => string> & React.RefAttributes<HTMLDivElement>>;
 export {};

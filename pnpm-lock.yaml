@@ -453,6 +453,9 @@ importers:
       '@types/lodash':
         specifier: ^4.17.16
         version: 4.17.16
+      '@types/moment-jalaali':
+        specifier: ^0.7.9
+        version: 0.7.9
       '@types/node':
         specifier: ^22.14.0
         version: 22.14.0
@@ -2700,6 +2703,9 @@ packages:
 
   '@types/mdx@2.0.13':
     resolution: {integrity: sha512-+OWZQfAYyio6YkJb3HLxDrvnx6SWWDbC0zVPfBRzUk0/nqoDyf6dNxQi3eArPe8rJ473nobTMQ/8Zk+LxJ+Yuw==}
+
+  '@types/moment-jalaali@0.7.9':
+    resolution: {integrity: sha512-gsDOoAzRnCfQTbfdlUrCvX6R0wIto6CvwfvV2C3j4qJLK+DEiTK8Rl/xlOCBO9C6qeUfX8oyZ2UfjnXJTOvHSA==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -8627,6 +8633,10 @@ snapshots:
       '@types/unist': 3.0.3
 
   '@types/mdx@2.0.13': {}
+
+  '@types/moment-jalaali@0.7.9':
+    dependencies:
+      moment: 2.30.1
 
   '@types/ms@2.1.0': {}
 

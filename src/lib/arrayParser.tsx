@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "lucide-react";
 
 export const parseArrayToHTML = (data) => {
@@ -26,8 +25,8 @@ export const parseArrayToHTML = (data) => {
               return (
                 <span
                   key={childIndex}
-                  className={`${child.bold && "font-bold"} ${ child.italic && "italic" } ${child.underline &&
-                  "underline"}`}
+                  className={`${child.bold && "font-bold"} ${child.italic && "italic"} ${child.underline &&
+                    "underline"}`}
                 >
                   {child.text == "\n" || child.text == "" ? <br /> : child.text}
                 </span>

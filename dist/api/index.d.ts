@@ -18,4 +18,5 @@ declare class Api {
     patch(url: string, params?: any): Promise<AxiosResponse>;
     delete(url: string, params?: any): Promise<AxiosResponse>;
 }
+export type { AxiosRequestConfig, AxiosResponse };
 export default Api;

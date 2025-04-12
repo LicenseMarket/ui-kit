@@ -24,14 +24,14 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import * as SeparatorPrimitive from '@radix-ui/react-separator';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 import { useTheme as useTheme$1 } from 'next-themes';
-import { Toaster as Toaster$1 } from 'sonner';
+import { Toaster as Toaster$1, toast } from 'sonner';
 export { toast } from 'sonner';
 import * as SwitchPrimitives from '@radix-ui/react-switch';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import * as AvatarPrimitive from '@radix-ui/react-avatar';
 import { create } from 'zustand';
 export { DirectionProvider } from '@radix-ui/react-direction';
-import 'axios';
+import axios from 'axios';
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { PlateContent, useEditorRef, useEditorContainerRef, PlateElement as PlateElement$1, useElement, useFormInputProps, usePlateEditor, ParagraphPlugin, PlateLeaf, useEditorSelector, useMarkToolbarButtonState, useMarkToolbarButton, useEditorReadOnly, Plate } from '@udecode/plate-common/react';
 import { cn as cn$1, withRef, withVariants, withProps, withCn, createPrimitiveElement } from '@udecode/cn';
@@ -911,6 +911,209 @@ function OperatorsSelect({ selectedUsers = [], setSelectedUsers, users, }) {
 }
 
 const getToken = () => localStorage.getItem("token");
+class Api {
+    xhr;
+    maxRetries = 100;
+    retryDelay = 2000; // 2 second
+    constructor(opts = { baseURL: "", headers: {} }) {
+        const apiBaseUrl = process.env.API_BASE_URL;
+        const cookie = localStorage.getItem("cookie");
+        const headers = {
+            "Content-Type": "application/json; charset=UTF8",
+            ...opts.headers,
+        };
+        const token = getToken();
+        if (token)
+            headers["Authorization"] = token;
+        if (cookie)
+            headers["X-Custom-Cookie"] = cookie;
+        this.xhr = axios.create({
+            baseURL: opts.baseURL || apiBaseUrl,
+            headers,
+        });
+        this.xhr.interceptors.request.use((config) => {
+            if (config.method === "options") {
+                config.headers["Access-Control-Request-Method"] = config.method;
+            }
+            return config;
+        });
+    }
+    handleErr = (err, retryCount = 0, originalRequest) => {
+        // const systemError = "سیستم در حال بررسی مشکل از سمت سعیده، تا اون موقع پاشو واسه خودت چایی بریز c😊"
+        if (err.response) {
+            const message = err.response?.data?.message;
+            const { status } = err.response;
+            switch (true) {
+                case status === 400:
+                    if (message && Array.isArray(message.errors)) {
+                        message.errors.map((error) => {
+                            toast.error(error.message || error);
+                        });
+                    }
+                    else if (err.response?.data?.errors?.message) {
+                        toast.error(err.response?.data?.errors.message);
+                    }
+                    else
+                        toast.error("درخواست نامعتبر");
+                    break;
+                case status === 401:
+                    toast.error("عدم احراز هویت");
+                    window.location.href = "/auth/login";
+                    window.localStorage.removeItem("token");
+                    window.localStorage.removeItem("user_info");
+                    window.localStorage.removeItem("permissions");
+                    break;
+                case status === 403:
+                    toast.error("دسترسی غیرمجاز");
+                    if (!["staff"].includes(window.location.pathname)) {
+                        setTimeout(() => {
+                            window.location.href = "/crm/react/403";
+                        }, 2000);
+                    }
+                    break;
+                case status === 404:
+                    toast.error("منبع یافت نشد");
+                    break;
+                case status >= 500:
+                    // toast.error(systemError);
+                    return this.retryRequest(err, retryCount, originalRequest);
+                case status === 0 && err.message.includes("Network Error"):
+                    // toast.error(systemError);
+                    return this.retryRequest(err, retryCount, originalRequest);
+                default:
+                    toast.error(message || "خطای ناشناخته");
+            }
+        }
+        else if (err.request) {
+            if (err.message.includes("Network Error")) {
+                // toast.error(systemError);
+                return this.retryRequest(err, retryCount, originalRequest);
+            }
+            else {
+                // toast.error(systemError);
+                return this.retryRequest(err, retryCount, originalRequest);
+            }
+        }
+        else ;
+        console.error("API Error:", err);
+    };
+    handleRes = (res) => {
+        const responseCookie = res.data.cookie;
+        if (responseCookie) {
+            try {
+                const existingCookie = window.localStorage.getItem("cookie");
+                const parsedExistingCookie = existingCookie
+                    ? JSON.parse(existingCookie)
+                    : null;
+                const parsedResponseCookie = JSON.parse(responseCookie);
+                window.localStorage.setItem("cookie", responseCookie);
+                if (parsedExistingCookie) {
+                    const isEqualCallStatus = parsedExistingCookie.callStatus === parsedResponseCookie.callStatus;
+                    const isEqualGoftinoStatus = parsedExistingCookie.goftinoStatus ===
+                        parsedResponseCookie.goftinoStatus;
+                    const isEqualHighestRank = parsedExistingCookie.highestRank ===
+                        parsedResponseCookie.highestRank;
+                    const isEqualroles = parsedExistingCookie.roles.length ===
+                        parsedResponseCookie.roles.length;
+                    if (!isEqualCallStatus ||
+                        !isEqualGoftinoStatus ||
+                        !isEqualHighestRank ||
+                        !isEqualroles) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+            }
+            catch (error) {
+                console.error("Error handling cookie:", error);
+            }
+        }
+    };
+    retryRequest = (err, retryCount, originalRequest) => {
+        if (retryCount < this.maxRetries) {
+            retryCount++;
+            console.log(`Retrying request (${retryCount}/${this.maxRetries})...`);
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(this.xhr(originalRequest));
+                }, this.retryDelay * retryCount);
+            }).catch((error) => this.handleErr(error, retryCount, originalRequest));
+        }
+        return Promise.reject(err);
+    };
+    get(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .get(url, {
+                params,
+            })
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err, 0, { method: "GET", url, params });
+            });
+        });
+    }
+    post(url, params, config) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .post(url, params, config)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    put(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .put(url, params)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    patch(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .patch(url, params)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    delete(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .delete(url, { data: params })
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+}
 
 const Accordion = AccordionPrimitive.Root;
 const AccordionItem = React.forwardRef(({ className, ...props }, ref) => (jsx(AccordionPrimitive.Item, { ref: ref, className: cn(className), ...props })));
@@ -1763,4 +1966,4 @@ const parseArrayToString = (data) => {
         .join("\n");
 };
 
-export { AccordionComponent as Accordion, AnimatedGradientText, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, getToken, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };
+export { AccordionComponent as Accordion, AnimatedGradientText, Api, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };

@@ -31,7 +31,7 @@ var TabsPrimitive = require('@radix-ui/react-tabs');
 var AvatarPrimitive = require('@radix-ui/react-avatar');
 var zustand = require('zustand');
 var reactDirection = require('@radix-ui/react-direction');
-require('axios');
+var axios = require('axios');
 var AccordionPrimitive = require('@radix-ui/react-accordion');
 var react = require('@udecode/plate-common/react');
 var cn$1 = require('@udecode/cn');
@@ -947,6 +947,209 @@ function OperatorsSelect({ selectedUsers = [], setSelectedUsers, users, }) {
 }
 
 const getToken = () => localStorage.getItem("token");
+class Api {
+    xhr;
+    maxRetries = 100;
+    retryDelay = 2000; // 2 second
+    constructor(opts = { baseURL: "", headers: {} }) {
+        const apiBaseUrl = process.env.API_BASE_URL;
+        const cookie = localStorage.getItem("cookie");
+        const headers = {
+            "Content-Type": "application/json; charset=UTF8",
+            ...opts.headers,
+        };
+        const token = getToken();
+        if (token)
+            headers["Authorization"] = token;
+        if (cookie)
+            headers["X-Custom-Cookie"] = cookie;
+        this.xhr = axios.create({
+            baseURL: opts.baseURL || apiBaseUrl,
+            headers,
+        });
+        this.xhr.interceptors.request.use((config) => {
+            if (config.method === "options") {
+                config.headers["Access-Control-Request-Method"] = config.method;
+            }
+            return config;
+        });
+    }
+    handleErr = (err, retryCount = 0, originalRequest) => {
+        // const systemError = "سیستم در حال بررسی مشکل از سمت سعیده، تا اون موقع پاشو واسه خودت چایی بریز c😊"
+        if (err.response) {
+            const message = err.response?.data?.message;
+            const { status } = err.response;
+            switch (true) {
+                case status === 400:
+                    if (message && Array.isArray(message.errors)) {
+                        message.errors.map((error) => {
+                            sonner.toast.error(error.message || error);
+                        });
+                    }
+                    else if (err.response?.data?.errors?.message) {
+                        sonner.toast.error(err.response?.data?.errors.message);
+                    }
+                    else
+                        sonner.toast.error("درخواست نامعتبر");
+                    break;
+                case status === 401:
+                    sonner.toast.error("عدم احراز هویت");
+                    window.location.href = "/auth/login";
+                    window.localStorage.removeItem("token");
+                    window.localStorage.removeItem("user_info");
+                    window.localStorage.removeItem("permissions");
+                    break;
+                case status === 403:
+                    sonner.toast.error("دسترسی غیرمجاز");
+                    if (!["staff"].includes(window.location.pathname)) {
+                        setTimeout(() => {
+                            window.location.href = "/crm/react/403";
+                        }, 2000);
+                    }
+                    break;
+                case status === 404:
+                    sonner.toast.error("منبع یافت نشد");
+                    break;
+                case status >= 500:
+                    // toast.error(systemError);
+                    return this.retryRequest(err, retryCount, originalRequest);
+                case status === 0 && err.message.includes("Network Error"):
+                    // toast.error(systemError);
+                    return this.retryRequest(err, retryCount, originalRequest);
+                default:
+                    sonner.toast.error(message || "خطای ناشناخته");
+            }
+        }
+        else if (err.request) {
+            if (err.message.includes("Network Error")) {
+                // toast.error(systemError);
+                return this.retryRequest(err, retryCount, originalRequest);
+            }
+            else {
+                // toast.error(systemError);
+                return this.retryRequest(err, retryCount, originalRequest);
+            }
+        }
+        else ;
+        console.error("API Error:", err);
+    };
+    handleRes = (res) => {
+        const responseCookie = res.data.cookie;
+        if (responseCookie) {
+            try {
+                const existingCookie = window.localStorage.getItem("cookie");
+                const parsedExistingCookie = existingCookie
+                    ? JSON.parse(existingCookie)
+                    : null;
+                const parsedResponseCookie = JSON.parse(responseCookie);
+                window.localStorage.setItem("cookie", responseCookie);
+                if (parsedExistingCookie) {
+                    const isEqualCallStatus = parsedExistingCookie.callStatus === parsedResponseCookie.callStatus;
+                    const isEqualGoftinoStatus = parsedExistingCookie.goftinoStatus ===
+                        parsedResponseCookie.goftinoStatus;
+                    const isEqualHighestRank = parsedExistingCookie.highestRank ===
+                        parsedResponseCookie.highestRank;
+                    const isEqualroles = parsedExistingCookie.roles.length ===
+                        parsedResponseCookie.roles.length;
+                    if (!isEqualCallStatus ||
+                        !isEqualGoftinoStatus ||
+                        !isEqualHighestRank ||
+                        !isEqualroles) {
+                        window.location.reload();
+                        return;
+                    }
+                }
+            }
+            catch (error) {
+                console.error("Error handling cookie:", error);
+            }
+        }
+    };
+    retryRequest = (err, retryCount, originalRequest) => {
+        if (retryCount < this.maxRetries) {
+            retryCount++;
+            console.log(`Retrying request (${retryCount}/${this.maxRetries})...`);
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(this.xhr(originalRequest));
+                }, this.retryDelay * retryCount);
+            }).catch((error) => this.handleErr(error, retryCount, originalRequest));
+        }
+        return Promise.reject(err);
+    };
+    get(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .get(url, {
+                params,
+            })
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err, 0, { method: "GET", url, params });
+            });
+        });
+    }
+    post(url, params, config) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .post(url, params, config)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    put(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .put(url, params)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    patch(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .patch(url, params)
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+    delete(url, params) {
+        return new Promise((resolve, reject) => {
+            this.xhr
+                .delete(url, { data: params })
+                .then((res) => {
+                resolve(res);
+                this.handleRes(res);
+            })
+                .catch((err) => {
+                reject(err);
+                this.handleErr(err);
+            });
+        });
+    }
+}
 
 const Accordion = AccordionPrimitive__namespace.Root;
 const AccordionItem = React__namespace.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx(AccordionPrimitive__namespace.Item, { ref: ref, className: cn(className), ...props })));
@@ -1809,6 +2012,7 @@ Object.defineProperty(exports, "DirectionProvider", {
 });
 exports.Accordion = AccordionComponent;
 exports.AnimatedGradientText = AnimatedGradientText;
+exports.Api = Api;
 exports.AspectRatio = AspectRatio;
 exports.Avatar = PicGroup;
 exports.Badge = Badge;
@@ -1959,7 +2163,6 @@ exports.TooltipTrigger = TooltipTrigger$1;
 exports.badgeVariants = badgeVariants;
 exports.buttonVariants = buttonVariants$2;
 exports.getDateDifference = getDateDifference;
-exports.getToken = getToken;
 exports.parseArrayToHTML = parseArrayToHTML;
 exports.parseArrayToString = parseArrayToString;
 exports.useFormField = useFormField;

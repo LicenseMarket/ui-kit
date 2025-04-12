@@ -244,4 +244,6 @@ class Api {
   }
 }
 
+export type { AxiosRequestConfig, AxiosResponse };
+
 export default Api;

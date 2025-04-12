@@ -41,7 +41,7 @@ export { DirectionProvider } from "@radix-ui/react-direction";
 export { toast } from "sonner";
 
 // API and Global Components
-export * from "./api";
+export { default as Api } from "./api";
 export { default as Accordion } from "./components/global/Accordion";
 export { default as Avatar } from "./components/global/Avatar";
 export { default as Combobox } from "./components/global/Combobox";

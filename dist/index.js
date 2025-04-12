@@ -9,13 +9,15 @@ var React = require('react');
 var reactSlot = require('@radix-ui/react-slot');
 var reactIcons = require('@radix-ui/react-icons');
 var lucideReact = require('lucide-react');
+var reactDayPicker = require('react-day-picker');
 var CheckboxPrimitive = require('@radix-ui/react-checkbox');
 var CollapsiblePrimitive = require('@radix-ui/react-collapsible');
 var cmdk = require('cmdk');
 var DialogPrimitive = require('@radix-ui/react-dialog');
 var DropdownMenuPrimitive = require('@radix-ui/react-dropdown-menu');
-var inputOtp = require('input-otp');
+var reactHookForm = require('react-hook-form');
 var LabelPrimitive = require('@radix-ui/react-label');
+var inputOtp = require('input-otp');
 var PopoverPrimitive = require('@radix-ui/react-popover');
 var RadioGroupPrimitive = require('@radix-ui/react-radio-group');
 var ScrollAreaPrimitive = require('@radix-ui/react-scroll-area');
@@ -45,6 +47,7 @@ var plateHeading = require('@udecode/plate-heading');
 var plateIndentList = require('@udecode/plate-indent-list');
 var ToolbarPrimitive = require('@radix-ui/react-toolbar');
 var nuqs = require('nuqs');
+var moment = require('moment-jalaali');
 
 function _interopNamespaceDefault(e) {
     var n = Object.create(null);
@@ -152,6 +155,40 @@ const Button = React__namespace.forwardRef(({ className, variant, loading, disab
     return (jsxRuntime.jsxs(Comp, { disabled: disabled || loading, className: cn(buttonVariants$2({ className, variant, size })), ref: ref, ...props, children: [loading && jsxRuntime.jsx(lucideReact.Loader2, { className: "animate-spin" }), props.children] }));
 });
 Button.displayName = "Button";
+
+function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
+    return (jsxRuntime.jsx(reactDayPicker.DayPicker, { showOutsideDays: showOutsideDays, className: cn("p-3", className), classNames: {
+            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
+            month: "space-y-4",
+            caption: "flex justify-center pt-1 relative items-center",
+            caption_label: "text-sm font-medium",
+            nav: "space-x-1 flex items-center",
+            nav_button: cn(buttonVariants$2({ variant: "outline" }), "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"),
+            nav_button_previous: "absolute left-1",
+            nav_button_next: "absolute right-1",
+            table: "w-full border-collapse space-y-1",
+            head_row: "flex",
+            head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
+            row: "flex w-full mt-2",
+            cell: cn("relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md", props.mode === "range"
+                ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
+                : "[&:has([aria-selected])]:rounded-md"),
+            day: cn(buttonVariants$2({ variant: "ghost" }), "h-8 w-8 p-0 font-normal aria-selected:opacity-100"),
+            day_range_start: "day-range-start",
+            day_range_end: "day-range-end",
+            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+            day_today: "bg-accent text-accent-foreground",
+            day_outside: "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
+            day_disabled: "text-muted-foreground opacity-50",
+            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+            day_hidden: "invisible",
+            ...classNames,
+        }, components: {
+            IconLeft: ({ className, ...props }) => (jsxRuntime.jsx(lucideReact.ChevronLeft, { className: cn("h-4 w-4", className), ...props })),
+            IconRight: ({ className, ...props }) => (jsxRuntime.jsx(lucideReact.ChevronRight, { className: cn("h-4 w-4", className), ...props })),
+        }, ...props }));
+}
+Calendar.displayName = "Calendar";
 
 const Card = React.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx("div", { ref: ref, className: cn("bg-card text-card-foreground rounded-xl border shadow", className), ...props })));
 Card.displayName = "Card";
@@ -284,6 +321,66 @@ const DropdownMenuShortcut = ({ className, ...props }) => {
 };
 DropdownMenuShortcut.displayName = "DropdownMenuShortcut";
 
+const labelVariants = classVarianceAuthority.cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70");
+const Label = React__namespace.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx(LabelPrimitive__namespace.Root, { ref: ref, className: cn(labelVariants(), className), ...props })));
+Label.displayName = LabelPrimitive__namespace.Root.displayName;
+
+const Form = reactHookForm.FormProvider;
+const FormFieldContext = React__namespace.createContext({});
+const FormField = ({ ...props }) => {
+    return (jsxRuntime.jsx(FormFieldContext.Provider, { value: { name: props.name }, children: jsxRuntime.jsx(reactHookForm.Controller, { ...props }) }));
+};
+const useFormField = () => {
+    const fieldContext = React__namespace.useContext(FormFieldContext);
+    const itemContext = React__namespace.useContext(FormItemContext);
+    const { getFieldState, formState } = reactHookForm.useFormContext();
+    const fieldState = getFieldState(fieldContext.name, formState);
+    if (!fieldContext) {
+        throw new Error("useFormField should be used within <FormField>");
+    }
+    const { id } = itemContext;
+    return {
+        id,
+        name: fieldContext.name,
+        formItemId: `${id}-form-item`,
+        formDescriptionId: `${id}-form-item-description`,
+        formMessageId: `${id}-form-item-message`,
+        ...fieldState,
+    };
+};
+const FormItemContext = React__namespace.createContext({});
+const FormItem = React__namespace.forwardRef(({ className, ...props }, ref) => {
+    const id = React__namespace.useId();
+    return (jsxRuntime.jsx(FormItemContext.Provider, { value: { id }, children: jsxRuntime.jsx("div", { ref: ref, className: cn("space-y-2", className), ...props }) }));
+});
+FormItem.displayName = "FormItem";
+const FormLabel = React__namespace.forwardRef(({ className, ...props }, ref) => {
+    const { error, formItemId } = useFormField();
+    return (jsxRuntime.jsx(Label, { ref: ref, className: cn(error && "text-destructive", className), htmlFor: formItemId, ...props }));
+});
+FormLabel.displayName = "FormLabel";
+const FormControl = React__namespace.forwardRef(({ ...props }, ref) => {
+    const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
+    return (jsxRuntime.jsx(reactSlot.Slot, { ref: ref, id: formItemId, "aria-describedby": !error
+            ? `${formDescriptionId}`
+            : `${formDescriptionId} ${formMessageId}`, "aria-invalid": !!error, ...props }));
+});
+FormControl.displayName = "FormControl";
+const FormDescription = React__namespace.forwardRef(({ className, ...props }, ref) => {
+    const { formDescriptionId } = useFormField();
+    return (jsxRuntime.jsx("p", { ref: ref, id: formDescriptionId, className: cn("text-muted-foreground text-[0.8rem]", className), ...props }));
+});
+FormDescription.displayName = "FormDescription";
+const FormMessage = React__namespace.forwardRef(({ className, children, ...props }, ref) => {
+    const { error, formMessageId } = useFormField();
+    const body = error ? String(error?.message) : children;
+    if (!body) {
+        return null;
+    }
+    return (jsxRuntime.jsx("p", { ref: ref, id: formMessageId, className: cn("text-destructive text-[0.8rem] font-medium", className), ...props, children: body }));
+});
+FormMessage.displayName = "FormMessage";
+
 const Input = React__namespace.forwardRef(({ className, type, ...props }, ref) => {
     return (jsxRuntime.jsx("input", { type: type, className: cn(`border-input file:text-foreground placeholder:text-muted-foreground
           focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3
@@ -307,10 +404,6 @@ const InputOTPSlot = React__namespace.forwardRef(({ index, className, ...props }
 InputOTPSlot.displayName = "InputOTPSlot";
 const InputOTPSeparator = React__namespace.forwardRef(({ ...props }, ref) => (jsxRuntime.jsx("div", { ref: ref, role: "separator", ...props, children: jsxRuntime.jsx(lucideReact.Dot, {}) })));
 InputOTPSeparator.displayName = "InputOTPSeparator";
-
-const labelVariants = classVarianceAuthority.cva("text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70");
-const Label = React__namespace.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx(LabelPrimitive__namespace.Root, { ref: ref, className: cn(labelVariants(), className), ...props })));
-Label.displayName = LabelPrimitive__namespace.Root.displayName;
 
 const Popover = PopoverPrimitive__namespace.Root;
 const PopoverTrigger = PopoverPrimitive__namespace.Trigger;
@@ -1674,6 +1767,48 @@ const TooltipGlobal = ({ trigger, content, className }) => {
     return (jsxRuntime.jsx(TooltipProvider$1, { children: jsxRuntime.jsxs(Tooltip$1, { children: [jsxRuntime.jsx(TooltipTrigger$1, { asChild: true, children: trigger }), jsxRuntime.jsx(TooltipContent$1, { className: className, children: content })] }) }));
 };
 
+moment.loadPersian({
+    usePersianDigits: true,
+});
+function getDateDifference(date, format) {
+    // const Colors = {
+    //   امروز: "#eab308",
+    //   دیروز: "#7f1d1d",
+    //   فردا: "#22c55e",
+    // };
+    // const currentTime = new Date();
+    date = new Date(date);
+    if (isNaN(date.getTime()))
+        return "تاریخ معتبر نیست";
+    return moment(date).format(format || "jDD jMMMM jYYYY - hh:mm");
+}
+
+const parseArrayToHTML = (data) => {
+    return data?.map((item, index) => {
+        const { type, align, children } = item;
+        const style = { textAlign: align };
+        switch (type) {
+            case "p":
+                return (jsxRuntime.jsx("p", { style: style, children: children.map((child, childIndex) => {
+                        if (child.type == "a") {
+                            return (jsxRuntime.jsxs("a", { href: child.url, target: "_blank", className: "text-primary flex items-center gap-2", children: [jsxRuntime.jsx(lucideReact.Link, { className: "size-4" }), " ", child.children[0].text] }));
+                        }
+                        return (jsxRuntime.jsx("span", { className: `${child.bold && "font-bold"} ${child.italic && "italic"} ${child.underline &&
+                                "underline"}`, children: child.text == "\n" || child.text == "" ? jsxRuntime.jsx("br", {}) : child.text }, childIndex));
+                    }) }, index));
+            default:
+                return null;
+        }
+    });
+};
+const parseArrayToString = (data) => {
+    return data
+        .map((item) => {
+        return item.children.map((child) => child.text).join("");
+    })
+        .join("\n");
+};
+
 Object.defineProperty(exports, "toast", {
     enumerable: true,
     get: function () { return sonner.toast; }
@@ -1695,6 +1830,7 @@ exports.BreadcrumbList = BreadcrumbList;
 exports.BreadcrumbPage = BreadcrumbPage;
 exports.BreadcrumbSeparator = BreadcrumbSeparator;
 exports.Button = Button;
+exports.Calendar = Calendar;
 exports.Card = Card;
 exports.CardContent = CardContent;
 exports.CardDescription = CardDescription;
@@ -1744,6 +1880,13 @@ exports.DropdownMenuSubTrigger = DropdownMenuSubTrigger;
 exports.DropdownMenuTrigger = DropdownMenuTrigger$1;
 exports.Editable = Editable;
 exports.Editor = _Editor;
+exports.Form = Form;
+exports.FormControl = FormControl;
+exports.FormDescription = FormDescription;
+exports.FormField = FormField;
+exports.FormItem = FormItem;
+exports.FormLabel = FormLabel;
+exports.FormMessage = FormMessage;
 exports.Input = Input;
 exports.InputOTP = InputOTP;
 exports.InputOTPGroup = InputOTPGroup;
@@ -1825,7 +1968,11 @@ exports.TooltipProvider = TooltipProvider$1;
 exports.TooltipTrigger = TooltipTrigger$1;
 exports.badgeVariants = badgeVariants;
 exports.buttonVariants = buttonVariants$2;
+exports.getDateDifference = getDateDifference;
 exports.getToken = getToken;
+exports.parseArrayToHTML = parseArrayToHTML;
+exports.parseArrayToString = parseArrayToString;
+exports.useFormField = useFormField;
 exports.useSidebar = useSidebar;
 exports.useTheme = useTheme;
 exports.useThemeStore = useThemeStore;

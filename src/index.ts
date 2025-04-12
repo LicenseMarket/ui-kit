@@ -35,7 +35,7 @@ export { DirectionProvider } from "@radix-ui/react-direction";
 
 // export * from "@/lib/dateDifference";
 
-export { default as Api } from "@/api";
+export * from "@/api";
 export { default as SheetGrid } from "@/components/global/SheetGrid";
 export { default as Combobox } from "@/components/global/Combobox";
 export { default as CustomDropdownMenu } from "@/components/global/DropdownMenu";

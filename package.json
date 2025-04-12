@@ -1,9 +1,14 @@
 {
   "name": "lm-ui-kit",
   "private": true,
-  "version": "1.0.9",
-  "main": "src/index.ts",
+  "version": "1.0.6.1",
   "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "rollup -c",
@@ -116,7 +121,6 @@
     "lucide-react": "^0.487.0",
     "moment-jalaali": "^0.10.4",
     "next-themes": "^0.4.6",
-    "nuqs": "^2.4.1",
     "path": "^0.12.7",
     "pdf-lib": "^1.17.1",
     "prismjs": "^1.29.0",
@@ -165,7 +169,6 @@
     "@storybook/react-vite": "^8.6.12",
     "@storybook/test": "^8.6.12",
     "@types/lodash": "^4.17.16",
-    "@types/moment-jalaali": "^0.7.9",
     "@types/node": "^22.14.0",
     "@types/react": "^19.0.10",
     "@types/react-dom": "^19.0.4",

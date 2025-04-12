@@ -7,8 +7,7 @@ import * as React from 'react';
 import React__default, { useState, useEffect, useMemo, Fragment as Fragment$1, useCallback, useRef } from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { ChevronLeftIcon, DotsHorizontalIcon, MagnifyingGlassIcon, CheckIcon, DotFilledIcon, ChevronDownIcon, ChevronUpIcon, DotsVerticalIcon, ViewVerticalIcon } from '@radix-ui/react-icons';
-import { Loader2, ChevronRight, ChevronLeft, Check, Dot, MoveDiagonal, ChevronsUpDown, CopyIcon, X, CheckIcon as CheckIcon$1, Pencil, Link, Text, ExternalLink, Unlink, ChevronDown, ListOrdered, List, AlignLeftIcon, AlignCenterIcon, AlignRightIcon, AlignJustifyIcon, BoldIcon, ItalicIcon, UnderlineIcon } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
+import { Loader2, Check, Dot, MoveDiagonal, ChevronsUpDown, CopyIcon, X, CheckIcon as CheckIcon$1, Pencil, Link, Text, ExternalLink, Unlink, ChevronRight, ChevronDown, ListOrdered, List, AlignLeftIcon, AlignCenterIcon, AlignRightIcon, AlignJustifyIcon, BoldIcon, ItalicIcon, UnderlineIcon } from 'lucide-react';
 import * as CheckboxPrimitive from '@radix-ui/react-checkbox';
 import * as CollapsiblePrimitive from '@radix-ui/react-collapsible';
 import { Command as Command$1 } from 'cmdk';
@@ -117,40 +116,6 @@ const Button = React.forwardRef(({ className, variant, loading, disabled, size, 
     return (jsxs(Comp, { disabled: disabled || loading, className: cn(buttonVariants$2({ className, variant, size })), ref: ref, ...props, children: [loading && jsx(Loader2, { className: "animate-spin" }), props.children] }));
 });
 Button.displayName = "Button";
-
-function Calendar({ className, classNames, showOutsideDays = true, ...props }) {
-    return (jsx(DayPicker, { showOutsideDays: showOutsideDays, className: cn("p-3", className), classNames: {
-            months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-            month: "space-y-4",
-            caption: "flex justify-center pt-1 relative items-center",
-            caption_label: "text-sm font-medium",
-            nav: "space-x-1 flex items-center",
-            nav_button: cn(buttonVariants$2({ variant: "outline" }), "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"),
-            nav_button_previous: "absolute left-1",
-            nav_button_next: "absolute right-1",
-            table: "w-full border-collapse space-y-1",
-            head_row: "flex",
-            head_cell: "text-muted-foreground rounded-md w-8 font-normal text-[0.8rem]",
-            row: "flex w-full mt-2",
-            cell: cn("relative p-0 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md", props.mode === "range"
-                ? "[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-                : "[&:has([aria-selected])]:rounded-md"),
-            day: cn(buttonVariants$2({ variant: "ghost" }), "h-8 w-8 p-0 font-normal aria-selected:opacity-100"),
-            day_range_start: "day-range-start",
-            day_range_end: "day-range-end",
-            day_selected: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-            day_today: "bg-accent text-accent-foreground",
-            day_outside: "day-outside text-muted-foreground aria-selected:bg-accent/50 aria-selected:text-muted-foreground",
-            day_disabled: "text-muted-foreground opacity-50",
-            day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
-            day_hidden: "invisible",
-            ...classNames,
-        }, components: {
-            IconLeft: ({ className, ...props }) => (jsx(ChevronLeft, { className: cn("h-4 w-4", className), ...props })),
-            IconRight: ({ className, ...props }) => (jsx(ChevronRight, { className: cn("h-4 w-4", className), ...props })),
-        }, ...props }));
-}
-Calendar.displayName = "Calendar";
 
 const Card = React__default.forwardRef(({ className, ...props }, ref) => (jsx("div", { ref: ref, className: cn("bg-card text-card-foreground rounded-xl border shadow", className), ...props })));
 Card.displayName = "Card";
@@ -1673,4 +1638,4 @@ const TooltipGlobal = ({ trigger, content, className }) => {
     return (jsx(TooltipProvider$1, { children: jsxs(Tooltip$1, { children: [jsx(TooltipTrigger$1, { asChild: true, children: trigger }), jsx(TooltipContent$1, { className: className, children: content })] }) }));
 };
 
-export { AccordionComponent as Accordion, AnimatedGradientText, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getToken, useSidebar, useTheme, useThemeStore };
+export { AccordionComponent as Accordion, AnimatedGradientText, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getToken, useSidebar, useTheme, useThemeStore };

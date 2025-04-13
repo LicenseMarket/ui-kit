@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { toast } from "sonner";
 
-export const getToken = () => localStorage.getItem("token");
+// export const getToken = () => localStorage.getItem("token");
 
 interface ApiOpts {
   baseURL?: string;
@@ -22,8 +22,8 @@ class Api {
       ...opts.headers,
     };
 
-    const token = getToken();
-    if (token) headers["Authorization"] = token;
+    // const token = getToken();
+    // if (token) headers["Authorization"] = token;
     if (cookie) headers["X-Custom-Cookie"] = cookie;
 
     this.xhr = axios.create({

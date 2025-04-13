@@ -99,3 +99,20 @@
   display: none;
   /* For Chrome, Safari, and Opera */
 }
+
+.zm-DaysButton[data-selected='true'] {
+  @apply !text-primary;
+}
+
+.zm-DaysButton[data-range='false'],
+.zm-DaysButton[data-range='false']::before {
+  @apply !bg-transparent;
+}
+
+.zm-DaysButton[data-start-range='true'] {
+  @apply !bg-primary !text-white;
+}
+
+.zm-DaysButton:hover {
+  @apply !border-primary/50;
+}

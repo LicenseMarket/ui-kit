@@ -59,3 +59,6 @@ export { default as TooltipGlobal } from "./components/global/Tooltip";
 // Commented out exports
 export * from "./lib/dateDifference";
 export * from "./lib/arrayParser";
+
+export { default as Storage } from "@/lib/Storage";
+export { default as CookieStorage } from "@/lib/CookieStorage";

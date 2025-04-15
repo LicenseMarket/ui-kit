@@ -910,20 +910,82 @@ function OperatorsSelect({ selectedUsers = [], setSelectedUsers, users, }) {
                                 }) })] })] }) }) }));
 }
 
+class CookieStorage {
+    static instance;
+    constructor() { }
+    static getInstance() {
+        if (!CookieStorage.instance) {
+            CookieStorage.instance = new CookieStorage();
+        }
+        return CookieStorage.instance;
+    }
+    static set(name, value, days) {
+        let expires = "";
+        if (days) {
+            const date = new Date();
+            date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+            expires = "; expires=" + date.toUTCString();
+        }
+        document.cookie =
+            name + "=" + encodeURIComponent(value) + expires + "; path=/";
+    }
+    static get(name) {
+        const nameEQ = name + "=";
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            let cookie = cookies[i];
+            while (cookie.charAt(0) === " ") {
+                cookie = cookie.substring(1, cookie.length);
+            }
+            if (cookie.indexOf(nameEQ) === 0) {
+                return decodeURIComponent(cookie.substring(nameEQ.length, cookie.length));
+            }
+        }
+        return null;
+    }
+    static delete(name) {
+        this.set(name, "", -1);
+    }
+    static exists(name) {
+        return this.get(name) !== null;
+    }
+    static getAll() {
+        const cookies = {};
+        const cookiesList = document.cookie.split(";");
+        for (let i = 0; i < cookiesList.length; i++) {
+            const cookie = cookiesList[i].trim();
+            if (cookie) {
+                const [name, value] = cookie.split("=");
+                cookies[decodeURIComponent(name)] = decodeURIComponent(value);
+            }
+        }
+        return cookies;
+    }
+    static clear() {
+        const cookies = document.cookie.split(";");
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i];
+            const eqPos = cookie.indexOf("=");
+            const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+            this.delete(name.trim());
+        }
+    }
+}
+var CookieStorage$1 = CookieStorage.getInstance();
+
 class Api {
     xhr;
     maxRetries = 100;
     retryDelay = 2000; // 2 second
     constructor(opts = { baseURL: "", headers: {}, tokenKey: "", token: "" }) {
         const apiBaseUrl = process.env.API_BASE_URL;
-        const cookie = localStorage.getItem("cookie");
+        const cookie = CookieStorage.get("cookie");
+        const token = opts.token || CookieStorage.get(opts.tokenKey || "token");
         const headers = {
             "Content-Type": "application/json; charset=UTF8",
+            Authorization: token,
             ...opts.headers,
         };
-        const token = opts.token || localStorage.getItem(opts.tokenKey || "token");
-        if (token)
-            headers["Authorization"] = token;
         if (cookie)
             headers["X-Custom-Cookie"] = cookie;
         this.xhr = axios.create({
@@ -1973,4 +2035,72 @@ const parseArrayToString = (data) => {
         .join("\n");
 };
 
-export { AccordionComponent as Accordion, AnimatedGradientText, Api, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };
+class Storage {
+    static instance;
+    constructor() { }
+    static getInstance() {
+        if (!Storage.instance) {
+            Storage.instance = new Storage();
+        }
+        return Storage.instance;
+    }
+    set(key, value) {
+        try {
+            if (typeof window !== "undefined") {
+                const serializedValue = JSON.stringify(value);
+                sessionStorage.setItem(key, serializedValue);
+            }
+        }
+        catch (error) {
+            console.error("Error setting sessionStorage item:", error);
+        }
+    }
+    get(key, defaultValue = null) {
+        try {
+            if (typeof window !== "undefined") {
+                const item = sessionStorage.getItem(key);
+                return item ? JSON.parse(item) : defaultValue;
+            }
+            return defaultValue;
+        }
+        catch (error) {
+            console.error("Error getting sessionStorage item:", error);
+            return defaultValue;
+        }
+    }
+    remove(key) {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.removeItem(key);
+            }
+        }
+        catch (error) {
+            console.error("Error removing sessionStorage item:", error);
+        }
+    }
+    clear() {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.clear();
+            }
+        }
+        catch (error) {
+            console.error("Error clearing sessionStorage:", error);
+        }
+    }
+    exists(key) {
+        try {
+            if (typeof window !== "undefined") {
+                return sessionStorage.getItem(key) !== null;
+            }
+            return false;
+        }
+        catch (error) {
+            console.error("Error checking sessionStorage item:", error);
+            return false;
+        }
+    }
+}
+var Storage$1 = Storage.getInstance();
+
+export { AccordionComponent as Accordion, AnimatedGradientText, Api, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, CookieStorage$1 as CookieStorage, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Storage$1 as Storage, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };

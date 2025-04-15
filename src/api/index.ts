@@ -1,7 +1,6 @@
+import { CookieStorage } from "@/lib/CookieStorage";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { toast } from "sonner";
-
-// export const getToken = () => localStorage.getItem("token");
 
 interface ApiOpts {
   baseURL?: string;
@@ -19,15 +18,15 @@ class Api {
     opts: ApiOpts = { baseURL: "", headers: {}, tokenKey: "", token: "" }
   ) {
     const apiBaseUrl = process.env.API_BASE_URL;
-    const cookie = localStorage.getItem("cookie");
+    const cookie = CookieStorage.get("cookie");
+    const token = opts.token || CookieStorage.get(opts.tokenKey || "token");
 
     const headers = {
       "Content-Type": "application/json; charset=UTF8",
+      Authorization: token,
       ...opts.headers,
     };
 
-    const token = opts.token || localStorage.getItem(opts.tokenKey || "token");
-    if (token) headers["Authorization"] = token;
     if (cookie) headers["X-Custom-Cookie"] = cookie;
 
     this.xhr = axios.create({

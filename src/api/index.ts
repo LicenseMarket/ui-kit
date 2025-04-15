@@ -166,6 +166,14 @@ class Api {
     return Promise.reject(err);
   };
 
+  setToken(token: string): void {
+    if (token) {
+      this.xhr.defaults.headers.common["Authorization"] = token;
+    } else {
+      delete this.xhr.defaults.headers.common["Authorization"];
+    }
+  }
+
   get(url: string, params?: any): Promise<AxiosResponse> {
     return new Promise((resolve, reject) => {
       this.xhr

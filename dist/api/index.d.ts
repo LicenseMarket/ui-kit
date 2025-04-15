@@ -13,6 +13,7 @@ declare class Api {
     private handleErr;
     private handleRes;
     private retryRequest;
+    setToken(token: string): void;
     get(url: string, params?: any): Promise<AxiosResponse>;
     post(url: string, params?: any, config?: AxiosRequestConfig): Promise<AxiosResponse>;
     put(url: string, params?: any): Promise<AxiosResponse>;

@@ -1076,6 +1076,14 @@ class Api {
         }
         return Promise.reject(err);
     };
+    setToken(token) {
+        if (token) {
+            this.xhr.defaults.headers.common["Authorization"] = token;
+        }
+        else {
+            delete this.xhr.defaults.headers.common["Authorization"];
+        }
+    }
     get(url, params) {
         return new Promise((resolve, reject) => {
             this.xhr

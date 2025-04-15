@@ -6,6 +6,7 @@ import { toast } from "sonner";
 interface ApiOpts {
   baseURL?: string;
   headers?: any;
+  token?: string;
   tokenKey?: string;
 }
 
@@ -14,7 +15,9 @@ class Api {
   private maxRetries: number = 100;
   private retryDelay: number = 2000; // 2 second
 
-  constructor(opts: ApiOpts = { baseURL: "", headers: {}, tokenKey: "" }) {
+  constructor(
+    opts: ApiOpts = { baseURL: "", headers: {}, tokenKey: "", token: "" }
+  ) {
     const apiBaseUrl = process.env.API_BASE_URL;
     const cookie = localStorage.getItem("cookie");
 
@@ -23,7 +26,7 @@ class Api {
       ...opts.headers,
     };
 
-    const token = localStorage.getItem(opts.tokenKey || "token");
+    const token = opts.token || localStorage.getItem(opts.tokenKey || "token");
     if (token) headers["Authorization"] = token;
     if (cookie) headers["X-Custom-Cookie"] = cookie;
 

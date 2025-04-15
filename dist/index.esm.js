@@ -914,14 +914,14 @@ class Api {
     xhr;
     maxRetries = 100;
     retryDelay = 2000; // 2 second
-    constructor(opts = { baseURL: "", headers: {}, tokenKey: "" }) {
+    constructor(opts = { baseURL: "", headers: {}, tokenKey: "", token: "" }) {
         const apiBaseUrl = process.env.API_BASE_URL;
         const cookie = localStorage.getItem("cookie");
         const headers = {
             "Content-Type": "application/json; charset=UTF8",
             ...opts.headers,
         };
-        const token = localStorage.getItem(opts.tokenKey || "token");
+        const token = opts.token || localStorage.getItem(opts.tokenKey || "token");
         if (token)
             headers["Authorization"] = token;
         if (cookie)

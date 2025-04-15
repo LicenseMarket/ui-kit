@@ -2,6 +2,7 @@ import { AxiosRequestConfig, AxiosResponse } from "axios";
 interface ApiOpts {
     baseURL?: string;
     headers?: any;
+    token?: string;
     tokenKey?: string;
 }
 declare class Api {

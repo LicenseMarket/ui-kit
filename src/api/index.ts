@@ -6,6 +6,7 @@ import { toast } from "sonner";
 interface ApiOpts {
   baseURL?: string;
   headers?: any;
+  tokenKey?: string;
 }
 
 class Api {
@@ -13,7 +14,7 @@ class Api {
   private maxRetries: number = 100;
   private retryDelay: number = 2000; // 2 second
 
-  constructor(opts: ApiOpts = { baseURL: "", headers: {} }) {
+  constructor(opts: ApiOpts = { baseURL: "", headers: {}, tokenKey: "" }) {
     const apiBaseUrl = process.env.API_BASE_URL;
     const cookie = localStorage.getItem("cookie");
 
@@ -22,8 +23,8 @@ class Api {
       ...opts.headers,
     };
 
-    // const token = getToken();
-    // if (token) headers["Authorization"] = token;
+    const token = localStorage.getItem(opts.tokenKey || "token");
+    if (token) headers["Authorization"] = token;
     if (cookie) headers["X-Custom-Cookie"] = cookie;
 
     this.xhr = axios.create({

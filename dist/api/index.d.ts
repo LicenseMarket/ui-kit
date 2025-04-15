@@ -1,8 +1,8 @@
 import { AxiosRequestConfig, AxiosResponse } from "axios";
-export declare const getToken: () => string | null;
 interface ApiOpts {
     baseURL?: string;
     headers?: any;
+    tokenKey?: string;
 }
 declare class Api {
     private xhr;

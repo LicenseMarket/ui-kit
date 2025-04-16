@@ -441,11 +441,7 @@ ScrollBar.displayName = ScrollAreaPrimitive__namespace.ScrollAreaScrollbar.displ
 const Select = SelectPrimitive__namespace.Root;
 const SelectGroup = SelectPrimitive__namespace.Group;
 const SelectValue = SelectPrimitive__namespace.Value;
-const SelectTrigger = React__namespace.forwardRef(({ className, children, ...props }, ref) => (jsxRuntime.jsxs(SelectPrimitive__namespace.Trigger, { ref: ref, className: cn(` ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex
-      h-9 w-full items-center justify-between whitespace-nowrap rounded-md border
-      border-[#FFFFFF] bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none
-      focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50
-      dark:border-[#4A5565] [&>span]:line-clamp-1`, className), ...props, children: [children, jsxRuntime.jsx(SelectPrimitive__namespace.Icon, { asChild: true, children: jsxRuntime.jsx(reactIcons.ChevronDownIcon, { className: "h-4 w-4 opacity-50" }) })] })));
+const SelectTrigger = React__namespace.forwardRef(({ className, children, ...props }, ref) => (jsxRuntime.jsxs(SelectPrimitive__namespace.Trigger, { ref: ref, className: cn(`flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1`, className), ...props, children: [children, jsxRuntime.jsx(SelectPrimitive__namespace.Icon, { asChild: true, children: jsxRuntime.jsx(reactIcons.ChevronDownIcon, { className: "h-4 w-4 opacity-50" }) })] })));
 SelectTrigger.displayName = SelectPrimitive__namespace.Trigger.displayName;
 const SelectScrollUpButton = React__namespace.forwardRef(({ className, ...props }, ref) => (jsxRuntime.jsx(SelectPrimitive__namespace.ScrollUpButton, { ref: ref, className: cn("flex cursor-default items-center justify-center py-1", className), ...props, children: jsxRuntime.jsx(reactIcons.ChevronUpIcon, { className: "h-4 w-4" }) })));
 SelectScrollUpButton.displayName = SelectPrimitive__namespace.ScrollUpButton.displayName;
@@ -1009,6 +1005,74 @@ class CookieStorage {
 }
 var CookieStorage$1 = CookieStorage.getInstance();
 
+class Storage {
+    static instance;
+    constructor() { }
+    static getInstance() {
+        if (!Storage.instance) {
+            Storage.instance = new Storage();
+        }
+        return Storage.instance;
+    }
+    set(key, value) {
+        try {
+            if (typeof window !== "undefined") {
+                const serializedValue = JSON.stringify(value);
+                sessionStorage.setItem(key, serializedValue);
+            }
+        }
+        catch (error) {
+            console.error("Error setting sessionStorage item:", error);
+        }
+    }
+    get(key, defaultValue = null) {
+        try {
+            if (typeof window !== "undefined") {
+                const item = sessionStorage.getItem(key);
+                return item ? JSON.parse(item) : defaultValue;
+            }
+            return defaultValue;
+        }
+        catch (error) {
+            console.error("Error getting sessionStorage item:", error);
+            return defaultValue;
+        }
+    }
+    remove(key) {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.removeItem(key);
+            }
+        }
+        catch (error) {
+            console.error("Error removing sessionStorage item:", error);
+        }
+    }
+    clear() {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.clear();
+            }
+        }
+        catch (error) {
+            console.error("Error clearing sessionStorage:", error);
+        }
+    }
+    exists(key) {
+        try {
+            if (typeof window !== "undefined") {
+                return sessionStorage.getItem(key) !== null;
+            }
+            return false;
+        }
+        catch (error) {
+            console.error("Error checking sessionStorage item:", error);
+            return false;
+        }
+    }
+}
+var Storage$1 = Storage.getInstance();
+
 class Api {
     xhr;
     maxRetries = 100;
@@ -1056,9 +1120,10 @@ class Api {
                 case status === 401:
                     sonner.toast.error("عدم احراز هویت");
                     window.location.href = "/auth/login";
-                    window.localStorage.removeItem("token");
-                    window.localStorage.removeItem("user_info");
-                    window.localStorage.removeItem("permissions");
+                    Storage$1.remove("token");
+                    Storage$1.remove("user_info");
+                    Storage$1.remove("permissions");
+                    CookieStorage.delete("token");
                     break;
                 case status === 403:
                     sonner.toast.error("دسترسی غیرمجاز");
@@ -1098,7 +1163,7 @@ class Api {
         const responseCookie = res.data.cookie;
         if (responseCookie) {
             try {
-                const existingCookie = window.localStorage.getItem("cookie");
+                const existingCookie = Storage$1.get("cookie") || null;
                 const parsedExistingCookie = existingCookie
                     ? JSON.parse(existingCookie)
                     : null;
@@ -1889,9 +1954,12 @@ function FixedToolbarButtons() {
     return (jsxRuntime.jsx("div", { className: "flex w-full", children: !readOnly && (jsxRuntime.jsxs(Toolbar, { children: [jsxRuntime.jsxs(ToolbarGroup, { children: [jsxRuntime.jsx(MarkToolbarButton, { nodeType: react$3.BoldPlugin.key, tooltip: "Bold (\u2318+B)", children: jsxRuntime.jsx(lucideReact.BoldIcon, {}) }), jsxRuntime.jsx(MarkToolbarButton, { nodeType: react$3.ItalicPlugin.key, tooltip: "Italic (\u2318+I)", children: jsxRuntime.jsx(lucideReact.ItalicIcon, {}) }), jsxRuntime.jsx(MarkToolbarButton, { nodeType: react$3.UnderlinePlugin.key, tooltip: "Underline (\u2318+U)", children: jsxRuntime.jsx(lucideReact.UnderlineIcon, {}) })] }), jsxRuntime.jsxs(ToolbarGroup, { children: [jsxRuntime.jsx(AlignDropdownMenu, {}), jsxRuntime.jsx(NumberedIndentListToolbarButton, {}), jsxRuntime.jsx(BulletedIndentListToolbarButton, {})] }), jsxRuntime.jsx(ToolbarGroup, { children: jsxRuntime.jsx(LinkToolbarButton, {}) })] })) }));
 }
 
-function _Editor({ onChange, value }) {
+function EditorComponent({ onChange, value }) {
     const editor = useCreateEditor({ value });
-    return (jsxRuntime.jsx("div", { className: "rounded-lg border p-1 dark:border-neutral-700", children: jsxRuntime.jsx(react.Plate, { editor: editor, onValueChange: (e) => onChange(JSON.stringify(e.value)), children: jsxRuntime.jsxs(EditorContainer, { children: [jsxRuntime.jsx(FixedToolbarButtons, {}), jsxRuntime.jsx(Separator, { className: "my-2" }), jsxRuntime.jsx("div", { className: "rtl hidden-scrollbar h-[calc(100vh-175px)] pr-5", children: jsxRuntime.jsx(Editor, { variant: "ai", placeholder: "\u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633\u06CC\u062F..." }) })] }) }) }));
+    const handleValueChange = (e) => {
+        onChange(JSON.stringify(e.value));
+    };
+    return (jsxRuntime.jsx("div", { className: "rounded-lg border p-1 dark:border-neutral-700", children: jsxRuntime.jsx(react.Plate, { editor: editor, onValueChange: handleValueChange, children: jsxRuntime.jsxs(EditorContainer, { children: [jsxRuntime.jsx(FixedToolbarButtons, {}), jsxRuntime.jsx(Separator, { className: "my-2" }), jsxRuntime.jsx("div", { className: "rtl hidden-scrollbar h-[calc(100vh-175px)] pr-5", children: jsxRuntime.jsx(Editor, { variant: "ai", placeholder: "\u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633\u06CC\u062F..." }) })] }) }) }));
 }
 
 const Pagination = ({ meta }) => {
@@ -2071,74 +2139,6 @@ const parseArrayToString = (data) => {
         .join("\n");
 };
 
-class Storage {
-    static instance;
-    constructor() { }
-    static getInstance() {
-        if (!Storage.instance) {
-            Storage.instance = new Storage();
-        }
-        return Storage.instance;
-    }
-    set(key, value) {
-        try {
-            if (typeof window !== "undefined") {
-                const serializedValue = JSON.stringify(value);
-                sessionStorage.setItem(key, serializedValue);
-            }
-        }
-        catch (error) {
-            console.error("Error setting sessionStorage item:", error);
-        }
-    }
-    get(key, defaultValue = null) {
-        try {
-            if (typeof window !== "undefined") {
-                const item = sessionStorage.getItem(key);
-                return item ? JSON.parse(item) : defaultValue;
-            }
-            return defaultValue;
-        }
-        catch (error) {
-            console.error("Error getting sessionStorage item:", error);
-            return defaultValue;
-        }
-    }
-    remove(key) {
-        try {
-            if (typeof window !== "undefined") {
-                sessionStorage.removeItem(key);
-            }
-        }
-        catch (error) {
-            console.error("Error removing sessionStorage item:", error);
-        }
-    }
-    clear() {
-        try {
-            if (typeof window !== "undefined") {
-                sessionStorage.clear();
-            }
-        }
-        catch (error) {
-            console.error("Error clearing sessionStorage:", error);
-        }
-    }
-    exists(key) {
-        try {
-            if (typeof window !== "undefined") {
-                return sessionStorage.getItem(key) !== null;
-            }
-            return false;
-        }
-        catch (error) {
-            console.error("Error checking sessionStorage item:", error);
-            return false;
-        }
-    }
-}
-var Storage$1 = Storage.getInstance();
-
 Object.defineProperty(exports, "toast", {
     enumerable: true,
     get: function () { return sonner.toast; }
@@ -2211,7 +2211,7 @@ exports.DropdownMenuSubContent = DropdownMenuSubContent;
 exports.DropdownMenuSubTrigger = DropdownMenuSubTrigger;
 exports.DropdownMenuTrigger = DropdownMenuTrigger$1;
 exports.Editable = Editable;
-exports.Editor = _Editor;
+exports.Editor = EditorComponent;
 exports.Form = Form;
 exports.FormControl = FormControl;
 exports.FormDescription = FormDescription;

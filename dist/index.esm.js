@@ -405,11 +405,7 @@ ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;
 const Select = SelectPrimitive.Root;
 const SelectGroup = SelectPrimitive.Group;
 const SelectValue = SelectPrimitive.Value;
-const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (jsxs(SelectPrimitive.Trigger, { ref: ref, className: cn(` ring-offset-background placeholder:text-muted-foreground focus:ring-ring flex
-      h-9 w-full items-center justify-between whitespace-nowrap rounded-md border
-      border-[#FFFFFF] bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none
-      focus:ring-1 disabled:cursor-not-allowed disabled:opacity-50
-      dark:border-[#4A5565] [&>span]:line-clamp-1`, className), ...props, children: [children, jsx(SelectPrimitive.Icon, { asChild: true, children: jsx(ChevronDownIcon, { className: "h-4 w-4 opacity-50" }) })] })));
+const SelectTrigger = React.forwardRef(({ className, children, ...props }, ref) => (jsxs(SelectPrimitive.Trigger, { ref: ref, className: cn(`flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1`, className), ...props, children: [children, jsx(SelectPrimitive.Icon, { asChild: true, children: jsx(ChevronDownIcon, { className: "h-4 w-4 opacity-50" }) })] })));
 SelectTrigger.displayName = SelectPrimitive.Trigger.displayName;
 const SelectScrollUpButton = React.forwardRef(({ className, ...props }, ref) => (jsx(SelectPrimitive.ScrollUpButton, { ref: ref, className: cn("flex cursor-default items-center justify-center py-1", className), ...props, children: jsx(ChevronUpIcon, { className: "h-4 w-4" }) })));
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName;
@@ -973,6 +969,74 @@ class CookieStorage {
 }
 var CookieStorage$1 = CookieStorage.getInstance();
 
+class Storage {
+    static instance;
+    constructor() { }
+    static getInstance() {
+        if (!Storage.instance) {
+            Storage.instance = new Storage();
+        }
+        return Storage.instance;
+    }
+    set(key, value) {
+        try {
+            if (typeof window !== "undefined") {
+                const serializedValue = JSON.stringify(value);
+                sessionStorage.setItem(key, serializedValue);
+            }
+        }
+        catch (error) {
+            console.error("Error setting sessionStorage item:", error);
+        }
+    }
+    get(key, defaultValue = null) {
+        try {
+            if (typeof window !== "undefined") {
+                const item = sessionStorage.getItem(key);
+                return item ? JSON.parse(item) : defaultValue;
+            }
+            return defaultValue;
+        }
+        catch (error) {
+            console.error("Error getting sessionStorage item:", error);
+            return defaultValue;
+        }
+    }
+    remove(key) {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.removeItem(key);
+            }
+        }
+        catch (error) {
+            console.error("Error removing sessionStorage item:", error);
+        }
+    }
+    clear() {
+        try {
+            if (typeof window !== "undefined") {
+                sessionStorage.clear();
+            }
+        }
+        catch (error) {
+            console.error("Error clearing sessionStorage:", error);
+        }
+    }
+    exists(key) {
+        try {
+            if (typeof window !== "undefined") {
+                return sessionStorage.getItem(key) !== null;
+            }
+            return false;
+        }
+        catch (error) {
+            console.error("Error checking sessionStorage item:", error);
+            return false;
+        }
+    }
+}
+var Storage$1 = Storage.getInstance();
+
 class Api {
     xhr;
     maxRetries = 100;
@@ -1020,9 +1084,10 @@ class Api {
                 case status === 401:
                     toast.error("عدم احراز هویت");
                     window.location.href = "/auth/login";
-                    window.localStorage.removeItem("token");
-                    window.localStorage.removeItem("user_info");
-                    window.localStorage.removeItem("permissions");
+                    Storage$1.remove("token");
+                    Storage$1.remove("user_info");
+                    Storage$1.remove("permissions");
+                    CookieStorage.delete("token");
                     break;
                 case status === 403:
                     toast.error("دسترسی غیرمجاز");
@@ -1062,7 +1127,7 @@ class Api {
         const responseCookie = res.data.cookie;
         if (responseCookie) {
             try {
-                const existingCookie = window.localStorage.getItem("cookie");
+                const existingCookie = Storage$1.get("cookie") || null;
                 const parsedExistingCookie = existingCookie
                     ? JSON.parse(existingCookie)
                     : null;
@@ -1853,9 +1918,12 @@ function FixedToolbarButtons() {
     return (jsx("div", { className: "flex w-full", children: !readOnly && (jsxs(Toolbar, { children: [jsxs(ToolbarGroup, { children: [jsx(MarkToolbarButton, { nodeType: BoldPlugin.key, tooltip: "Bold (\u2318+B)", children: jsx(BoldIcon, {}) }), jsx(MarkToolbarButton, { nodeType: ItalicPlugin.key, tooltip: "Italic (\u2318+I)", children: jsx(ItalicIcon, {}) }), jsx(MarkToolbarButton, { nodeType: UnderlinePlugin.key, tooltip: "Underline (\u2318+U)", children: jsx(UnderlineIcon, {}) })] }), jsxs(ToolbarGroup, { children: [jsx(AlignDropdownMenu, {}), jsx(NumberedIndentListToolbarButton, {}), jsx(BulletedIndentListToolbarButton, {})] }), jsx(ToolbarGroup, { children: jsx(LinkToolbarButton, {}) })] })) }));
 }
 
-function _Editor({ onChange, value }) {
+function EditorComponent({ onChange, value }) {
     const editor = useCreateEditor({ value });
-    return (jsx("div", { className: "rounded-lg border p-1 dark:border-neutral-700", children: jsx(Plate, { editor: editor, onValueChange: (e) => onChange(JSON.stringify(e.value)), children: jsxs(EditorContainer, { children: [jsx(FixedToolbarButtons, {}), jsx(Separator, { className: "my-2" }), jsx("div", { className: "rtl hidden-scrollbar h-[calc(100vh-175px)] pr-5", children: jsx(Editor, { variant: "ai", placeholder: "\u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633\u06CC\u062F..." }) })] }) }) }));
+    const handleValueChange = (e) => {
+        onChange(JSON.stringify(e.value));
+    };
+    return (jsx("div", { className: "rounded-lg border p-1 dark:border-neutral-700", children: jsx(Plate, { editor: editor, onValueChange: handleValueChange, children: jsxs(EditorContainer, { children: [jsx(FixedToolbarButtons, {}), jsx(Separator, { className: "my-2" }), jsx("div", { className: "rtl hidden-scrollbar h-[calc(100vh-175px)] pr-5", children: jsx(Editor, { variant: "ai", placeholder: "\u0627\u06CC\u0646\u062C\u0627 \u0628\u0646\u0648\u06CC\u0633\u06CC\u062F..." }) })] }) }) }));
 }
 
 const Pagination = ({ meta }) => {
@@ -2035,72 +2103,4 @@ const parseArrayToString = (data) => {
         .join("\n");
 };
 
-class Storage {
-    static instance;
-    constructor() { }
-    static getInstance() {
-        if (!Storage.instance) {
-            Storage.instance = new Storage();
-        }
-        return Storage.instance;
-    }
-    set(key, value) {
-        try {
-            if (typeof window !== "undefined") {
-                const serializedValue = JSON.stringify(value);
-                sessionStorage.setItem(key, serializedValue);
-            }
-        }
-        catch (error) {
-            console.error("Error setting sessionStorage item:", error);
-        }
-    }
-    get(key, defaultValue = null) {
-        try {
-            if (typeof window !== "undefined") {
-                const item = sessionStorage.getItem(key);
-                return item ? JSON.parse(item) : defaultValue;
-            }
-            return defaultValue;
-        }
-        catch (error) {
-            console.error("Error getting sessionStorage item:", error);
-            return defaultValue;
-        }
-    }
-    remove(key) {
-        try {
-            if (typeof window !== "undefined") {
-                sessionStorage.removeItem(key);
-            }
-        }
-        catch (error) {
-            console.error("Error removing sessionStorage item:", error);
-        }
-    }
-    clear() {
-        try {
-            if (typeof window !== "undefined") {
-                sessionStorage.clear();
-            }
-        }
-        catch (error) {
-            console.error("Error clearing sessionStorage:", error);
-        }
-    }
-    exists(key) {
-        try {
-            if (typeof window !== "undefined") {
-                return sessionStorage.getItem(key) !== null;
-            }
-            return false;
-        }
-        catch (error) {
-            console.error("Error checking sessionStorage item:", error);
-            return false;
-        }
-    }
-}
-var Storage$1 = Storage.getInstance();
-
-export { AccordionComponent as Accordion, AnimatedGradientText, Api, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, CookieStorage$1 as CookieStorage, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, _Editor as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Storage$1 as Storage, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };
+export { AccordionComponent as Accordion, AnimatedGradientText, Api, AspectRatio, PicGroup as Avatar, Badge, Breadcrumb, BreadcrumbEllipsis, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, Calendar, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Checkbox, Collapsible, CollapsibleContent, CollapsibleTrigger, ComboboxDemo as Combobox, Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut, CookieStorage$1 as CookieStorage, Copy, CustomDropdownMenu, Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogOverlay, DialogPortal, DialogTitle, DialogTrigger, DropdownMenu$1 as DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent$1 as DropdownMenuContent, DropdownMenuGroup$1 as DropdownMenuGroup, DropdownMenuItem$1 as DropdownMenuItem, DropdownMenuLabel$1 as DropdownMenuLabel, DropdownMenuPortal, DropdownMenuRadioGroup$1 as DropdownMenuRadioGroup, DropdownMenuRadioItem$1 as DropdownMenuRadioItem, DropdownMenuSeparator$1 as DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubContent, DropdownMenuSubTrigger, DropdownMenuTrigger$1 as DropdownMenuTrigger, Editable, EditorComponent as Editor, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot, Label, OperatorsSelect, Pagination, Popover, PopoverAnchor, PopoverContent, PopoverTrigger, RadioGroup, RadioGroupItem, ScrollArea, ScrollBar, Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectScrollDownButton, SelectScrollUpButton, SelectSeparator, SelectTrigger, SelectValue, Separator$1 as Separator, avatar as ShadCNAvatar, Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetGrid, SheetHeader, SheetOverlay, SheetPortal, SheetTitle, SheetTrigger, Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupAction, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarInput, SidebarInset, SidebarMenu, SidebarMenuAction, SidebarMenuBadge, SidebarMenuButton, SidebarMenuItem, SidebarMenuSkeleton, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem, SidebarProvider, SidebarRail, SidebarSeparator, SidebarTrigger, Skeleton, Storage$1 as Storage, Switch, _Table as Table, TableOptions, Tabs, TabsContent, TabsList, TabsTrigger, Tag, Textarea, ThemeProvider, Toaster, Tooltip$1 as Tooltip, TooltipContent$1 as TooltipContent, TooltipGlobal, TooltipProvider$1 as TooltipProvider, TooltipTrigger$1 as TooltipTrigger, badgeVariants, buttonVariants$2 as buttonVariants, getDateDifference, parseArrayToHTML, parseArrayToString, useFormField, useSidebar, useTheme, useThemeStore };

@@ -6,7 +6,7 @@ import postcss from 'rollup-plugin-postcss';
 import typescript from '@rollup/plugin-typescript';
 import json from '@rollup/plugin-json';
 import { readFileSync } from 'fs';
-
+import copy from 'rollup-plugin-copy';
 // Read dependencies from package.json to make them external
 const pkg = JSON.parse(readFileSync('./package.json', 'utf8'));
 const deps = Object.keys(pkg.dependencies || {});
@@ -47,6 +47,11 @@ export default {
             extract: 'index.css', // Outputs CSS to dist/index.css
             minimize: true, // Minifies CSS
             sourceMap: true,
+        }),
+        copy({
+            targets: [
+                { src: 'src/assets/fonts/*', dest: 'dist/fonts' } // Copy fonts from src to dist
+            ]
         }),
     ],
     external: id => external.some(dep => id === dep || id.startsWith(`${dep}/`)),

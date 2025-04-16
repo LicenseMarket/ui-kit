@@ -136,6 +136,7 @@
     "react-router-dom": "^6.28.0",
     "react-textarea-autosize": "^8.5.6",
     "react-tweet": "^3.2.1",
+    "rollup-plugin-copy": "^3.5.0",
     "slate": "^0.112.0",
     "slate-dom": "^0.111.0",
     "slate-history": "^0.110.3",

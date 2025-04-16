@@ -1,4 +1,5 @@
 import { CookieStorage } from "@/lib/CookieStorage";
+import Storage from "@/lib/Storage";
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { toast } from "sonner";
 
@@ -65,9 +66,10 @@ class Api {
         case status === 401:
           toast.error("عدم احراز هویت");
           window.location.href = "/auth/login";
-          window.localStorage.removeItem("token");
-          window.localStorage.removeItem("user_info");
-          window.localStorage.removeItem("permissions");
+          Storage.remove("token");
+          Storage.remove("user_info");
+          Storage.remove("permissions");
+          CookieStorage.delete("token");
           break;
         case status === 403:
           toast.error("دسترسی غیرمجاز");
@@ -109,9 +111,9 @@ class Api {
     const responseCookie = res.data.cookie;
     if (responseCookie) {
       try {
-        const existingCookie = window.localStorage.getItem("cookie");
+        const existingCookie = Storage.get("cookie") || null;
         const parsedExistingCookie = existingCookie
-          ? JSON.parse(existingCookie)
+          ? JSON.parse(existingCookie as string)
           : null;
         const parsedResponseCookie = JSON.parse(responseCookie);
 

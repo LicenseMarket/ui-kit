@@ -1,4 +1,6 @@
 import { Button } from "./components/ui/button"
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./components/ui/select"
+import Editor from './components/global/Editor'
 
 function App() {
   return (
@@ -23,6 +25,25 @@ function App() {
             component library
           </Button>
         </p>
+      </div>
+
+      <div className="flex gap-2 flex-col m-5 p-5 border rounded-md">
+        <Select>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select a fruit" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              <SelectLabel>Fruits</SelectLabel>
+              <SelectItem value="apple">Apple</SelectItem>
+              <SelectItem value="banana">Banana</SelectItem>
+              <SelectItem value="blueberry">Blueberry</SelectItem>
+              <SelectItem value="grapes">Grapes</SelectItem>
+              <SelectItem value="pineapple">Pineapple</SelectItem>
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+        <Editor value="" onChange={() => { }} />
       </div>
     </>
   )
